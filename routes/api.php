@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\BlogPostController;
 use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Api\Admin\ChunkedUploadController;
 use App\Http\Controllers\Api\Admin\DistrictController;
 use App\Http\Controllers\Api\Admin\DistrictZoneController;
 use App\Http\Controllers\Api\Admin\EventController;
@@ -26,6 +27,9 @@ Route::prefix('admin')->group(function (): void {
     Route::post('categories/{category}/subcategories', [CategoryController::class, 'storeSubcategory']);
     Route::put('subcategories/{subcategory}', [CategoryController::class, 'updateSubcategory']);
     Route::delete('subcategories/{subcategory}', [CategoryController::class, 'destroySubcategory']);
+
+    Route::post('upload/chunk', [ChunkedUploadController::class, 'uploadChunk']);
+    Route::post('upload/finalize', [ChunkedUploadController::class, 'finalizeUpload']);
 
     Route::apiResource('media', MediaItemController::class);
     Route::patch('media/{id}/publish', [MediaItemController::class, 'updatePublishStatus']);
