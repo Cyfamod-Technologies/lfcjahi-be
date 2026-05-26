@@ -18,6 +18,23 @@ class MediaItemController extends Controller
 {
     private const MAX_AUDIO_FILE_SIZE_KB = 204800;
 
+    public function storageStats(): JsonResponse
+    {
+        $files = Storage::disk('public')->files('media-audio');
+        $totalBytes = 0;
+
+        foreach ($files as $file) {
+            $totalBytes += Storage::disk('public')->size($file);
+        }
+
+        return response()->json([
+            'data' => [
+                'audioSizeBytes' => $totalBytes,
+                'audioFileCount' => count($files),
+            ],
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */

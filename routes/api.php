@@ -31,6 +31,7 @@ Route::prefix('admin')->group(function (): void {
     Route::post('upload/chunk', [ChunkedUploadController::class, 'uploadChunk']);
     Route::post('upload/finalize', [ChunkedUploadController::class, 'finalizeUpload']);
 
+    Route::get('media/storage-stats', [MediaItemController::class, 'storageStats']);
     Route::apiResource('media', MediaItemController::class);
     Route::patch('media/{id}/publish', [MediaItemController::class, 'updatePublishStatus']);
     Route::apiResource('speakers', SpeakerController::class)->except(['show']);
