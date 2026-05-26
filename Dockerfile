@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libicu-dev \
     libxslt-dev \
-    libcurl4-openssl-dev \
     libpq-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -y \
         gd \
         intl \
         xsl \
-        xml \
         zip \
         pcntl
 
