@@ -228,7 +228,7 @@ jobs:
           set -euo pipefail
 
           sudo apt-get update
-          sudo apt-get install --yes openssh-client sshpass
+          sudo apt-get install --yes openssh-client
 
       - name: Validate deployment secrets
         if: github.event_name != 'pull_request'
@@ -236,14 +236,14 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
         run: |
           set -euo pipefail
 
           : "${SSH_HOST:?SSH_HOST repository secret is missing}"
           : "${SSH_USER:?SSH_USER repository secret is missing}"
-          : "${SSH_PASSWORD:?SSH_PASSWORD repository secret is missing}"
+          : "${SSH_PRIVATE_KEY:?SSH_PRIVATE_KEY repository secret is missing}"
           : "${DOKPLOY_API_KEY:?DOKPLOY_API_KEY repository secret is missing}"
           : "${DOKPLOY_APPLICATION_ID:?DOKPLOY_APPLICATION_ID repository secret is missing}"
 
@@ -267,17 +267,30 @@ jobs:
 
           chmod 600 "$HOME/.ssh/known_hosts"
 
+      - name: Load SSH private key
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" | ssh-add -
+
       - name: Test SSH and Docker Swarm
         if: github.event_name != 'pull_request'
         shell: bash
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           set -euo pipefail
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             -o ServerAliveInterval=10 \
@@ -297,11 +310,10 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           set -euo pipefail
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             -o ServerAliveInterval=10 \
@@ -407,7 +419,6 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           set -euo pipefail
 
@@ -418,7 +429,7 @@ jobs:
             "$FULL_IMAGE" \
             "$LATEST_IMAGE" |
             gzip -1 |
-            sshpass -e ssh \
+            ssh \
               -o ConnectTimeout=15 \
               -o ConnectionAttempts=1 \
               -o ServerAliveInterval=15 \
@@ -428,7 +439,7 @@ jobs:
 
           echo "Docker image transferred successfully."
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             "$SSH_USER@$SSH_HOST" \
@@ -443,11 +454,10 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           set -euo pipefail
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             -o ServerAliveInterval=10 \
@@ -675,12 +685,11 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
         run: |
           set -euo pipefail
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             -o ServerAliveInterval=10 \
@@ -1241,11 +1250,10 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           set +e
 
-          sshpass -e ssh \
+          ssh \
             -o ConnectTimeout=15 \
             -o ConnectionAttempts=1 \
             "$SSH_USER@$SSH_HOST" \
