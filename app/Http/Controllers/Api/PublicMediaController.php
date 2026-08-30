@@ -93,7 +93,7 @@ class PublicMediaController extends Controller
             'title' => $metaTitle !== '' ? $metaTitle : 'Audio Message',
             'description' => implode(' ', $descriptionParts).'. Listen and download the message from LFC Jahi.',
             'image' => $payload['thumbnailUrl'] ?: $payload['speakerImageUrl'] ?: $this->frontendAssetUrl('/images/og-image.jpg'),
-            'shareUrl' => $this->publicUrl('/messages/'.$item->id),
+            'shareUrl' => $this->frontendMessageUrl((string) $item->id),
             'frontendUrl' => $this->frontendMessageUrl((string) $item->id),
             'speaker' => $speaker,
             'service' => $service,
@@ -120,7 +120,7 @@ class PublicMediaController extends Controller
             'speakerImageUrl' => $this->absoluteUrl($speakerImagePath),
             'mediaUrl' => $this->absoluteUrl($item->media_url),
             'downloadUrl' => $this->publicUrl('/api/media/'.$item->id.'/download'),
-            'shareUrl' => $this->publicUrl('/messages/'.$item->id),
+            'shareUrl' => $this->frontendMessageUrl((string) $item->id),
             'downloadCount' => (int) ($item->download_count ?? 0),
             'mediaSourceType' => $item->media_source_type ?? '',
             'isPublished' => (bool) $item->is_published,
@@ -227,7 +227,7 @@ class PublicMediaController extends Controller
     {
         $baseUrl = rtrim((string) config('app.frontend_url', 'https://lfcjahi.com'), '/');
 
-        return $baseUrl.'/single-message.html?id='.urlencode($id);
+        return $baseUrl.'/messages/'.urlencode($id);
     }
 
     private function frontendAssetUrl(string $path): string
